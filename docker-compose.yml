@@ -1,0 +1,79 @@
+version: "2"
+services:
+
+  master:
+    image: mysql:5.7
+    container_name: mysql_node0
+    restart: always
+    mem_limit: 256m
+    networks:
+      net1:
+        ipv4_address: 10.6.0.10
+    ports:
+      - "3306"
+    volumes:
+      - "./volumes/mysql_node0/conf/:/etc/mysql/conf.d/"
+    env_file:
+      - ./parameters.env
+
+  slave1:
+    image: mysql:5.7
+    container_name: mysql_node1
+    restart: always
+    depends_on:
+      - master
+    mem_limit: 256m
+    networks:
+      net1:
+        ipv4_address: 10.6.0.11
+    ports:
+      - "3306"
+    volumes:
+      - "./volumes/mysql_node1/conf/:/etc/mysql/conf.d/"
+    env_file:
+      - ./parameters.env
+  slave2:
+    image: mysql:5.7
+    container_name: mysql_node2
+    depends_on:
+      - master
+    restart: always
+    mem_limit: 256m
+    networks:
+      net1:
+        ipv4_address: 10.6.0.12
+    ports:
+      - "3306"
+    volumes:
+      - "./volumes/mysql_node2/conf/:/etc/mysql/conf.d/"
+    env_file:
+      - ./parameters.env
+
+  proxy:
+    image: breeze2/proxysql:test
+    container_name: proxysql
+    depends_on:
+      - master
+      - slave1
+      - slave2
+    restart: always
+    mem_limit: 256m
+    networks:
+      net1:
+        ipv4_address: 10.6.0.9
+    ports:
+      - "127.0.0.1:60320:6032"
+      - "60330:6033"
+    volumes:
+      - "./volumes/proxysql/conf:/etc/proxysql"
+    entrypoint: "proxysql -f -c /etc/proxysql/pr.cnf"
+    env_file:
+      - ./parameters.env
+
+networks:
+  net1:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.6.0.0/16
+          gateway: 10.6.0.1
