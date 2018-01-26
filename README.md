@@ -30,5 +30,5 @@ $ mysql -u admin2 -padmin2 -h 127.0.0.1 -P60320
 
 5. login proxysql database interface
 ```cmd
-$ mysql -u pr_auser -ppr_auser -h 127.0.0.1 -P60330
+$ mysql -u pr_auser -ppr_apass -h 127.0.0.1 -P60330
 ```
